@@ -1,11 +1,52 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, Platform, TextInput, Button, FlatList, View } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+type Task = {
+  id: number;
+  title: string;
+  date: string;
+  priority: string;
+  status: string;
+};
+
 export default function HomeScreen() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [priority, setPriority] = useState('low');
+
+  const addTask = () => {
+    if (title && date) {  
+      const newTask: Task = {
+        id: tasks.length + 1,
+        title,
+        date,
+        priority,
+        status: 'to-do',
+      };
+      setTasks((prevTasks) => [...prevTasks, newTask]); 
+      setTitle('');
+      setDate('');
+      setPriority('low');
+    } else {
+      console.log("Please fill in all fields");
+    }
+  };
+
+  const renderTask = ({ item }: { item: Task }) => (
+    <View style={styles.taskContainer}>
+      <ThemedText type="title">{item.title}</ThemedText>
+      <ThemedText>Дата: {item.date}</ThemedText>
+      <ThemedText>Пріоритет: {item.priority}</ThemedText>
+      <ThemedText>Статус: {item.status}</ThemedText>
+    </View>
+  );
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -19,37 +60,37 @@ export default function HomeScreen() {
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
+
+
+      <ThemedView style={styles.formContainer}>
+        <ThemedText type="subtitle">Create New Task</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholder="Task Title"
+          value={title}
+          onChangeText={setTitle}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Date (YYYY-MM-DD)"
+          value={date}
+          onChangeText={setDate}
+        />
+        <ThemedText type="subtitle">Priority</ThemedText>
+        <View style={styles.pickerContainer}>
+          <Button title="Low" onPress={() => setPriority('low')} />
+          <Button title="Medium" onPress={() => setPriority('medium')} />
+          <Button title="High" onPress={() => setPriority('high')} />
+        </View>
+        <Button title="Add Task" onPress={addTask} />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
+
+      <FlatList
+        data={tasks}
+        renderItem={renderTask}
+        keyExtractor={(item) => item.id.toString()} 
+        style={styles.taskList}
+      />
     </ParallaxScrollView>
   );
 }
@@ -60,9 +101,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  stepContainer: {
+  formContainer: {
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 4,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  pickerContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  taskContainer: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   reactLogo: {
     height: 178,
@@ -70,5 +141,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  taskList: {
+    marginTop: 20,
   },
 });
